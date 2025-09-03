@@ -1,57 +1,56 @@
 import os
 import streamlit as st
-st.cache_data.clear()
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import shap
 from PIL import Image
 import joblib
-
-# === Fonction pour obtenir le chemin absolu des fichiers ===
-def resource_path(*paths):
-    base_dir = os.path.dirname(__file__)
-    return os.path.join(base_dir, *paths)
+import gdown
 
 # === Configuration de la page ===
 st.set_page_config(
     page_title="Estimation Prix Immobilier",
-    page_icon=resource_path("images", "icone.png"),
+    page_icon="🏠"
 )
 
-# Titre
+# === Clear cache si besoin ===
+st.cache_data.clear()
+
+# === Titre ===
 st.markdown("""
     <h3 style='text-align: center;'>
         🏡 Estimation du Prix d'un Bien Immobilier
     </h3>
 """, unsafe_allow_html=True)
 
-# Image
-image_path = resource_path("images", "immo.jpg")
-image = Image.open(image_path)
-image_resized = image.resize((700, 300))
-st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-st.image(image_resized)
-st.markdown("</div>", unsafe_allow_html=True)
+# === Image ===
+image_path = os.path.join("images", "immo.jpg")
+if os.path.exists(image_path):
+    image = Image.open(image_path)
+    image_resized = image.resize((700, 300))
+    st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+    st.image(image_resized)
+    st.markdown("</div>", unsafe_allow_html=True)
+else:
+    st.warning("Image introuvable.")
 
-# === Téléchargement du modèle depuis Google Drive si nécessaire ===
+# === Téléchargement du modèle depuis Google Drive ===
 def download_model_from_drive(file_id, dest_path):
     if not os.path.exists(dest_path):
         st.warning("Téléchargement du modèle depuis Google Drive...")
-        import gdown
         url = f"https://drive.google.com/uc?id={file_id}"
         gdown.download(url, dest_path, quiet=False)
         st.success("Modèle téléchargé avec succès.")
 
 # === Chargement du modèle ===
 def load_model():
-    modele_path = resource_path("model_DVF_compress.pkl")
-    drive_file_id = "VOTRE_FILE_ID_ICI"  # Remplacez par l'ID réel
+    modele_path = os.path.join(os.getcwd(), "model_DVF_compress.pkl")  # dossier courant
+    drive_file_id = "1fmHhx6VoCJNczSQSFPHFJ__-w3L_xCIT"
+    
     download_model_from_drive(drive_file_id, modele_path)
 
     if not os.path.exists(modele_path):
-        st.error("Le fichier 'model_DVF_compress.pkl' est introuvable.")
-        return None
+        st.error(f"Le fichier modèle est introuvable à {modele_path}")
+        st.stop()
 
     return joblib.load(modele_path)
 
@@ -97,18 +96,15 @@ if model is not None:
         'Type_local_Appartement', 'Type_local_Maison'
     ])
 
-    # Forcer les colonnes en float pour SHAP
-    donnees_utilisateur = donnees_utilisateur.astype(float)
+donnees_utilisateur = donnees_utilisateur.astype(float)
 
-    st.write("Données utilisées pour la prédiction :")
-    st.dataframe(donnees_utilisateur)
+st.write("Données utilisées pour la prédiction :")
+st.dataframe(donnees_utilisateur)
 
-    try:
-        prediction = model.predict(donnees_utilisateur)[0]
-        st.info(f"Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
-    except Exception as e:
-        st.error("Erreur lors de la prédiction.")
-        st.text(str(e))
-
-else:
-    st.stop()
+# Prédiction
+try:
+    prediction = model.predict(donnees_utilisateur)[0]
+    st.info(f"Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
+except Exception as e:
+    st.error("Erreur lors de la prédiction.")
+    st.text(str(e))
