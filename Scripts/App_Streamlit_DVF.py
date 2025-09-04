@@ -35,33 +35,34 @@ else:
 
 # === Téléchargement du modèle depuis Google Drive ===
 def download_model_from_drive(file_id, dest_path):
+    # Créer le dossier models/ si inexistant
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
     if not os.path.exists(dest_path):
         st.warning("📥 Téléchargement du modèle depuis Google Drive...")
         url = f"https://drive.google.com/uc?id={file_id}"
-        gdown.download(url, dest_path, quiet=False)
+        output = gdown.download(url, dest_path, quiet=False)
+
+        # Vérification du fichier téléchargé
+        if output is None or not os.path.exists(dest_path) or os.path.getsize(dest_path) < 10_000_000:
+            st.error("❌ Téléchargement échoué ou fichier corrompu. Vérifie ton lien Google Drive.")
+            st.stop()
+
         st.success("✅ Modèle téléchargé avec succès.")
 
 # === Chargement du modèle ===
 def load_model():
-    # Stockage du modèle dans un dossier relatif
-    model_dir = "models"
-    os.makedirs(model_dir, exist_ok=True)  # crée le dossier s'il n'existe pas
-
-    modele_path = os.path.join(model_dir, "model_DVF_compress.pkl")
+    modele_path = os.path.join("models", "model_DVF_compress.pkl")
     drive_file_id = "1fmHhx6VoCJNczSQSFPHFJ__-w3L_xCIT"
-
-    # Téléchargement si le fichier n’existe pas
+    
     download_model_from_drive(drive_file_id, modele_path)
 
-    # Vérification
     if not os.path.exists(modele_path):
         st.error(f"❌ Le fichier modèle est introuvable à {modele_path}")
         st.stop()
 
-    # Chargement
     return joblib.load(modele_path)
 
-# Charger le modèle
 model = load_model()
 
 # === Interface utilisateur pour la prédiction ===
@@ -112,7 +113,7 @@ if model is not None:
     # Prédiction
     try:
         prediction = model.predict(donnees_utilisateur)[0]
-        st.info(f"Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
+        st.info(f"💰 Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
     except Exception as e:
         st.error("Erreur lors de la prédiction.")
         st.text(str(e))
