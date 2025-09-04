@@ -33,26 +33,38 @@ if os.path.exists(image_path):
 else:
     st.warning("Image introuvable.")
 
-# === Téléchargement du modèle depuis GitHub ===
-def download_model_from_github(dest_path):
-    if not os.path.exists(dest_path):
-        st.info("📥 Téléchargement du modèle depuis GitHub...")
-        url = "https://github.com/DataEngineer87/ModelisationFonciere/raw/main/models/model_DVF_compress.pkl"
-        gdown.download(url, dest_path, quiet=False)
-        st.success("✅ Modèle téléchargé avec succès.")
-
-# === Chargement du modèle ===
+# === Téléchargement et chargement du modèle ===
 def load_model():
-    modele_path = os.path.join(os.path.dirname(__file__), "..", "models", "model_DVF_compress.pkl")
-    modele_path = os.path.normpath(modele_path)
+    modele_path = os.path.join("models", "model_DVF_compress.pkl")
+    github_raw_url = "https://github.com/DataEngineer87/ModelisationFonciere/raw/main/models/model_DVF_compress.pkl"
     
-    download_model_from_github(modele_path)
-
+    # Créer le dossier models si nécessaire
+    if not os.path.exists("models"):
+        os.makedirs("models")
+    
+    # Télécharger le modèle si absent
     if not os.path.exists(modele_path):
-        st.error(f"❌ Le fichier modèle est introuvable à {modele_path}")
+        st.info("📥 Téléchargement du modèle depuis GitHub...")
+        try:
+            gdown.download(github_raw_url, modele_path, quiet=False)
+            st.success("✅ Modèle téléchargé avec succès.")
+        except Exception as e:
+            st.error("❌ Impossible de télécharger le modèle.")
+            st.text(str(e))
+            st.stop()
+    
+    # Vérifier que le fichier existe
+    if not os.path.exists(modele_path):
+        st.error(f"Le fichier modèle est introuvable à {modele_path}")
         st.stop()
     
-    return joblib.load(modele_path)
+    # Charger et retourner le modèle
+    try:
+        return joblib.load(modele_path)
+    except Exception as e:
+        st.error("❌ Erreur lors du chargement du modèle.")
+        st.text(str(e))
+        st.stop()
 
 model = load_model()
 
