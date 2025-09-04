@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 import joblib
+import gdown
 
 # === Configuration de la page ===
 st.set_page_config(
@@ -22,7 +23,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === Image ===
-image_path = os.path.join(os.path.dirname(__file__), "..", "images", "immo.jpg")
+image_path = os.path.join("images", "immo.jpg")
 if os.path.exists(image_path):
     image = Image.open(image_path)
     image_resized = image.resize((700, 300))
@@ -32,21 +33,26 @@ if os.path.exists(image_path):
 else:
     st.warning("Image introuvable.")
 
+# === Téléchargement du modèle depuis GitHub ===
+def download_model_from_github(dest_path):
+    if not os.path.exists(dest_path):
+        st.info("📥 Téléchargement du modèle depuis GitHub...")
+        url = "https://github.com/DataEngineer87/ModelisationFonciere/raw/main/models/model_DVF_compress.pkl"
+        gdown.download(url, dest_path, quiet=False)
+        st.success("✅ Modèle téléchargé avec succès.")
+
 # === Chargement du modèle ===
 def load_model():
     modele_path = os.path.join(os.path.dirname(__file__), "..", "models", "model_DVF_compress.pkl")
-
-    st.write("Chemin du modèle :", modele_path)
-    st.write("Fichiers dans le dossier models :", os.listdir(os.path.join(os.path.dirname(__file__), "..", "models")))
+    modele_path = os.path.normpath(modele_path)
+    
+    download_model_from_github(modele_path)
 
     if not os.path.exists(modele_path):
-        st.error(f"Le fichier modèle est introuvable à {modele_path}")
+        st.error(f"❌ Le fichier modèle est introuvable à {modele_path}")
         st.stop()
     
-    with st.spinner("Chargement du modèle, cela peut prendre quelques secondes..."):
-        model = joblib.load(modele_path)
-    st.success("Modèle chargé ! ✅")
-    return model
+    return joblib.load(modele_path)
 
 model = load_model()
 
