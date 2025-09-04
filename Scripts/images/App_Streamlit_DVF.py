@@ -43,12 +43,11 @@ def download_model_from_drive(file_id, dest_path):
 
 # === Chargement du modèle ===
 def load_model():
-    model_dir = os.path.join(os.getcwd(), "models")
-    os.makedirs(model_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
-
-    modele_path = os.path.join(model_dir, "model_DVF_compress.pkl")
-    drive_file_id = "1fmHhx6VoCJNczSQSFPHFJ__-w3L_xCIT"  # ID de ton modèle sur GDrive
-
+    # Utilisation d’un chemin relatif (dans le dossier courant)
+    modele_path = "model_DVF_compress.pkl"
+    drive_file_id = "1fmHhx6VoCJNczSQSFPHFJ__-w3L_xCIT"
+    
+    # Télécharger si absent
     download_model_from_drive(drive_file_id, modele_path)
 
     if not os.path.exists(modele_path):
@@ -73,7 +72,7 @@ if model is not None:
     ])
     Type_local = st.selectbox("Type de bien", ["Appartement", "Maison"])
 
-    # Encodage one-hot avec noms exacts du modèle
+    # Encodage one-hot
     Nature_mutation_Adjudication = float(Nature_mutation == "Adjudication")
     Nature_mutation_Echange = float(Nature_mutation == "Echange")
     Nature_mutation_Expropriation = float(Nature_mutation == "Expropriation")
