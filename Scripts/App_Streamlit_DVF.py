@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 import joblib
-import gdown
 
 # === Configuration de la page ===
 st.set_page_config(
@@ -33,35 +32,16 @@ if os.path.exists(image_path):
 else:
     st.warning("Image introuvable.")
 
-# === Téléchargement du modèle depuis Google Drive ===
-def download_model_from_drive(file_id, dest_path):
-    # Créer le dossier models/ si inexistant
-    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-
-    if not os.path.exists(dest_path):
-        st.warning("📥 Téléchargement du modèle depuis Google Drive...")
-        url = f"https://drive.google.com/uc?id={file_id}"
-        output = gdown.download(url, dest_path, quiet=False)
-
-        # Vérification du fichier téléchargé
-        if output is None or not os.path.exists(dest_path) or os.path.getsize(dest_path) < 10_000_000:
-            st.error("❌ Téléchargement échoué ou fichier corrompu. Vérifie ton lien Google Drive.")
-            st.stop()
-
-        st.success("✅ Modèle téléchargé avec succès.")
-
-# === Chargement du modèle ===
+# === Chargement du modèle depuis le repo ===
 def load_model():
-    modele_path = os.path.join("models", "model_DVF_compress.pkl")
-    drive_file_id = "1fmHhx6VoCJNczSQSFPHFJ__-w3L_xCIT"
-    
-    download_model_from_drive(drive_file_id, modele_path)
-
+    modele_path = os.path.join("models", "model_DVF_compress.pkl")  # chemin GitHub
     if not os.path.exists(modele_path):
-        st.error(f"❌ Le fichier modèle est introuvable à {modele_path}")
+        st.error(f"Le fichier modèle est introuvable à {modele_path}")
         st.stop()
-
-    return joblib.load(modele_path)
+    with st.spinner("Chargement du modèle, cela peut prendre quelques secondes..."):
+        model = joblib.load(modele_path)
+    st.success("Modèle chargé ! ✅")
+    return model
 
 model = load_model()
 
@@ -79,7 +59,7 @@ if model is not None:
     ])
     Type_local = st.selectbox("Type de bien", ["Appartement", "Maison"])
 
-    # Encodage one-hot avec noms exacts du modèle
+    # Encodage one-hot
     Nature_mutation_Adjudication = float(Nature_mutation == "Adjudication")
     Nature_mutation_Echange = float(Nature_mutation == "Echange")
     Nature_mutation_Expropriation = float(Nature_mutation == "Expropriation")
@@ -113,7 +93,7 @@ if model is not None:
     # Prédiction
     try:
         prediction = model.predict(donnees_utilisateur)[0]
-        st.info(f"💰 Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
+        st.info(f"Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
     except Exception as e:
         st.error("Erreur lors de la prédiction.")
         st.text(str(e))
