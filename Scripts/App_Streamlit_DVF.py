@@ -43,9 +43,11 @@ def download_model_from_drive(file_id, dest_path):
 
 # === Chargement du modèle ===
 def load_model():
-    modele_path = os.path.join(os.getcwd(), "model_DVF_compress.pkl")  # dossier courant
+    # Utilisation d’un chemin relatif (dans le dossier courant)
+    modele_path = "model_DVF_compress.pkl"
     drive_file_id = "1fmHhx6VoCJNczSQSFPHFJ__-w3L_xCIT"
     
+    # Télécharger si absent
     download_model_from_drive(drive_file_id, modele_path)
 
     if not os.path.exists(modele_path):
@@ -70,7 +72,7 @@ if model is not None:
     ])
     Type_local = st.selectbox("Type de bien", ["Appartement", "Maison"])
 
-    # Encodage one-hot avec noms exacts du modèle
+    # Encodage one-hot
     Nature_mutation_Adjudication = float(Nature_mutation == "Adjudication")
     Nature_mutation_Echange = float(Nature_mutation == "Echange")
     Nature_mutation_Expropriation = float(Nature_mutation == "Expropriation")
@@ -96,15 +98,15 @@ if model is not None:
         'Type_local_Appartement', 'Type_local_Maison'
     ])
 
-donnees_utilisateur = donnees_utilisateur.astype(float)
+    donnees_utilisateur = donnees_utilisateur.astype(float)
 
-st.write("Données utilisées pour la prédiction :")
-st.dataframe(donnees_utilisateur)
+    st.write("Données utilisées pour la prédiction :")
+    st.dataframe(donnees_utilisateur)
 
-# Prédiction
-try:
-    prediction = model.predict(donnees_utilisateur)[0]
-    st.info(f"Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
-except Exception as e:
-    st.error("Erreur lors de la prédiction.")
-    st.text(str(e))
+    # Prédiction
+    try:
+        prediction = model.predict(donnees_utilisateur)[0]
+        st.info(f"Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
+    except Exception as e:
+        st.error("Erreur lors de la prédiction.")
+        st.text(str(e))
