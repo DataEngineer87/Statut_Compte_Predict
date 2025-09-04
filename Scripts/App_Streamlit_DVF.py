@@ -22,7 +22,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === Image ===
-image_path = os.path.join("images", "immo.jpg")
+image_path = os.path.join(os.path.dirname(__file__), "..", "images", "immo.jpg")
 if os.path.exists(image_path):
     image = Image.open(image_path)
     image_resized = image.resize((700, 300))
@@ -32,12 +32,17 @@ if os.path.exists(image_path):
 else:
     st.warning("Image introuvable.")
 
-# === Chargement du modèle depuis le repo ===
+# === Chargement du modèle ===
 def load_model():
-    modele_path = os.path.join("models", "model_DVF_compress.pkl")  # chemin GitHub
+    modele_path = os.path.join(os.path.dirname(__file__), "..", "models", "model_DVF_compress.pkl")
+
+    st.write("Chemin du modèle :", modele_path)
+    st.write("Fichiers dans le dossier models :", os.listdir(os.path.join(os.path.dirname(__file__), "..", "models")))
+
     if not os.path.exists(modele_path):
         st.error(f"Le fichier modèle est introuvable à {modele_path}")
         st.stop()
+    
     with st.spinner("Chargement du modèle, cela peut prendre quelques secondes..."):
         model = joblib.load(modele_path)
     st.success("Modèle chargé ! ✅")
