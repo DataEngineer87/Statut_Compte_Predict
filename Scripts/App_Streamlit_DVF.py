@@ -2,6 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from PIL import Image
 import joblib
 
@@ -10,13 +11,13 @@ st.cache_data.clear()
 
 # === Fonction pour obtenir le chemin absolu des fichiers ===
 def resource_path(*paths):
-    base_dir = os.path.dirname(__file__)  # __file__ pointe vers Scripts/App_Streamlit_DVF
+    base_dir = os.path.dirname(__file__)
     return os.path.join(base_dir, *paths)
 
 # === Configuration de la page ===
 st.set_page_config(
     page_title="Estimation Prix Immobilier",
-    page_icon=resource_path("images", "icone.png"),
+    page_icon=resource_path("..", "images", "icone.png"),  # <-- correction
 )
 
 # === Titre de l'application ===
@@ -27,7 +28,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === Image d'en-tête ===
-image_path = resource_path("images", "immo.jpg")
+image_path = resource_path("..", "images", "immo.jpg")  # <-- correction
 if os.path.exists(image_path):
     image = Image.open(image_path)
     image_resized = image.resize((700, 300))
@@ -37,8 +38,8 @@ if os.path.exists(image_path):
 else:
     st.warning("Image 'immo.jpg' introuvable.")
 
-# === Chemin vers le modèle dans le dépôt ===
-MODELE_PATH = resource_path("models", "model_compress.pkl")
+# === Chemin vers le modèle (un niveau au-dessus de Scripts/) ===
+MODELE_PATH = resource_path("..", "models", "model_compress.pkl")  # <-- correction
 
 # === Chargement du modèle ===
 def load_model():
@@ -70,8 +71,12 @@ if model is not None:
     Type_local = st.selectbox("Type de bien", ["Appartement", "Maison"])
 
     # === Encodage one-hot ===
-    Nature_dict = {k: 0 for k in ["Adjudication", "Echange", "Expropriation", "Vente", "VEFA", "Terrain à bâtir"]}
+    Nature_dict = {
+        "Adjudication": 0, "Echange": 0, "Expropriation": 0,
+        "Vente": 0, "VEFA": 0, "Terrain à bâtir": 0
+    }
     Nature_dict[Nature_mutation] = 1
+
     Type_dict = {"Appartement": 0, "Maison": 0}
     Type_dict[Type_local] = 1
 
