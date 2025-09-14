@@ -34,7 +34,7 @@ st.image(image_resized)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # === Chemin absolu vers le modèle ===
-MODELE_PATH = "/home/sacko/Documents/ProjetStatuCompt/models/model_compress.pkl"
+MODELE_PATH = "models/model_compress.pkl"
 
 # === Chargement du modèle ===
 def load_model():
