@@ -6,7 +6,7 @@
 
 # # A- Packages nécessaires pour le projet
 
-# In[25]:
+# In[1]:
 
 
 from joblib import Parallel, delayed
@@ -38,7 +38,7 @@ import warnings
 
 # ### B.1- Chargement dess données et exploration 
 
-# In[26]:
+# In[2]:
 
 
 def load_and_save_data(file_path, sep=None, export=False, export_path=None,
@@ -133,7 +133,7 @@ def load_and_save_data(file_path, sep=None, export=False, export_path=None,
     return df
 
 
-# In[27]:
+# In[3]:
 
 
 #Fonction d'identification de la nature des variables
@@ -158,7 +158,7 @@ def compter_variables(dataset):
     print(f"Nombre de variables qualitatives : {len(qualitatives)}")
 
 
-# In[28]:
+# In[4]:
 
 
 # Identification des lignes dupliquées dans le DataFrame
@@ -177,7 +177,7 @@ def duplicated_values_summary(df):
     return {"total_duplicated_rows": total_duplicated_rows, "duplicated_columns": duplicated_columns}
 
 
-# In[29]:
+# In[5]:
 
 
 # Comptage du taux de données manquantes dans le DataFrame
@@ -227,7 +227,7 @@ def pie_nan(dataframe):
     plt.show()
 
 
-# In[30]:
+# In[6]:
 
 
 # Affichege du pourcentage de valeurs manquantes par colonne
@@ -238,7 +238,7 @@ def show_all_missing(data_set):
     return (data_set.isna().sum() / data_set.shape[0]).sort_values(ascending=True) * 100
 
 
-# In[31]:
+# In[7]:
 
 
 def format_commune_insee(dept_code, commune_code):
@@ -252,7 +252,7 @@ def format_commune_insee(dept_code, commune_code):
 
 # Création de nouvelle colonne 'commune_insee' à partir de dataset valeur foncière
 def create_commune_insee(df, dept_col, commune_col):
-    
+
     # Application de la fonction à chaque ligne du DataFrame
     df['commune_insee'] = df.apply(lambda row: format_commune_insee(row[dept_col], row[commune_col]), axis=1)
 
@@ -263,12 +263,12 @@ def create_commune_insee(df, dept_col, commune_col):
     return df
 
 
-# In[32]:
+# In[8]:
 
 
 # Ajout de 0 devant les code postaux à 4 chiffres et suppression de .0 dans le dataset valeur foncière
 def process_code_postal(df):
-    
+
     # Convertir la colonne en chaîne de caractères
     df['Code postal'] = df['Code postal'].astype(str)
 
@@ -281,7 +281,7 @@ def process_code_postal(df):
     return df
 
 
-# In[33]:
+# In[9]:
 
 
 # Ajout d’un 0 devant les codes postaux à 4 chiffres dans la variable code_postal du dataset region.
@@ -290,7 +290,7 @@ def process_code_postal_region(df):
     return df
 
 
-# In[34]:
+# In[10]:
 
 
 # Conversion de type des variables
@@ -308,7 +308,7 @@ def transform_data_types(df, col_types):
     return df
 
 
-# In[35]:
+# In[11]:
 
 
 # Création des colonnes annee_mutation, mois_mutation
@@ -319,7 +319,7 @@ def dateFiltered(df):
     return df
 
 
-# In[36]:
+# In[12]:
 
 
 # Gestion des valeurs abérantes
@@ -344,16 +344,16 @@ def detect_outliers_iqr(df):
     return df
 
 
-# In[37]:
+# In[13]:
 
 
 def handle_missing_values(df, method='median', fill_value=None):
-    
+
     # Traitement spécifique pour la colonne 'Type de voie'
     if 'Type de voie' in df.columns:
         if not df['Type de voie'].dropna().empty:
             df['Type de voie'] = df['Type de voie'].fillna(df['Type de voie'].mode()[0])
-    
+
     if method == 'drop':
         df = df.dropna()  # Supprime les lignes contenant des valeurs NaN
 
@@ -378,7 +378,7 @@ def handle_missing_values(df, method='median', fill_value=None):
     return df
 
 
-# In[38]:
+# In[14]:
 
 
 # suppression des doublons dans le dataSet
@@ -387,25 +387,25 @@ def remove_duplicates(df, subset=None):
     return df.drop_duplicates(subset=subset)
 
 
-# In[39]:
+# In[15]:
 
 
 # Standardisation des variables numériques
 def scale_numeric_features(df):
-    
+
     # Variables numériques continues à scaler
     numeric_columns = ['Surface reelle bati', 'Nombre pieces principales',
                        'Surface terrain', 'prix_m2', 'annee_mutation', 
                        'mois_mutation']
-    
+
     # Appliquer le StandardScaler uniquement à ces colonnes
     scaler = StandardScaler()
     df[numeric_columns] = scaler.fit_transform(df[numeric_columns])
-    
+
     return df
 
 
-# In[40]:
+# In[16]:
 
 
 # Nettoyage des variables
@@ -425,7 +425,7 @@ def clean_column_names(columns):
     return df
 
 
-# In[41]:
+# In[17]:
 
 
 # Affichage de heatmap de matrice de corrélation avec un seuil d'affichage des étiquettes de corrélation.
@@ -470,7 +470,7 @@ def plot_half_correlation_matrix(matrix_num, thres=0.1, size=(10, 8), cmap="cool
     plt.show()
 
 
-# In[42]:
+# In[18]:
 
 
 # prompt: dans la base df_region, ajoute 0 devant tout nombre ayant 4 caractères dans la variable code_postal
@@ -479,7 +479,7 @@ def process_code_postal_region(df):
     return df
 
 
-# In[43]:
+# In[19]:
 
 
 def preprocessing(df):
@@ -526,7 +526,7 @@ def preprocessing(df):
     return X, y
 
 
-# In[44]:
+# In[20]:
 
 
 # Représentation graphique de valeurs foncières par département
@@ -585,7 +585,7 @@ def afficher_carte_departements(df_dep, departements, var_a_afficher="Valeur fon
     plt.show()
 
 
-# In[45]:
+# In[21]:
 
 
 # Affiche une carte des communes colorée en fonction d'une variable discrétisée.
@@ -605,7 +605,7 @@ def afficher_carte_communes(df_commu, codes_postaux, var_a_afficher="Valeur fonc
         'uniform': mc.EqualInterval,
         'jenks': mc.NaturalBreaks
     }
-    
+
     method_class = method_dict.get(methode_discretisation, mc.Quantiles)  # Par défaut : quantile
 
     try:
@@ -628,7 +628,7 @@ def afficher_carte_communes(df_commu, codes_postaux, var_a_afficher="Valeur fonc
     plt.show()
 
 
-# In[46]:
+# In[24]:
 
 
 from category_encoders import TargetEncoder
@@ -650,7 +650,7 @@ def target_encoding(df_train_cleaned, df_test_cleaned):
     high_card_cols = ['Voie', 'Type_de_voie']
     encoder = TargetEncoder(cols=high_card_cols)
 
-    # Fit uniquement sur le train
+    # Fit uniquement sur le trainFonction_utils
     encoder.fit(df_train_cleaned[high_card_cols], df_train_cleaned['Valeur_fonciere'])
 
     # Transform train et test
@@ -678,7 +678,7 @@ def target_encoding(df_train_cleaned, df_test_cleaned):
     return df_train_cleaned, df_test_cleaned
 
 
-# In[ ]:
+# In[25]:
 
 
 # Convertir_colonnes_booleennes_en_entiers
@@ -686,6 +686,12 @@ def convert_bool_to_numeric(df):
     for col in df.select_dtypes(include='bool').columns:
         df[col] = df[col].astype(int)
     return df
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

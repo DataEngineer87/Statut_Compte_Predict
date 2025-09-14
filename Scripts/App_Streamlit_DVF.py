@@ -1,70 +1,48 @@
 import os
 import streamlit as st
+st.cache_data.clear()
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import shap
 from PIL import Image
 import joblib
-import gdown
+
+# === Fonction pour obtenir le chemin absolu des fichiers (hors modèle) ===
+def resource_path(*paths):
+    base_dir = os.path.dirname(__file__)
+    return os.path.join(base_dir, *paths)
 
 # === Configuration de la page ===
 st.set_page_config(
     page_title="Estimation Prix Immobilier",
-    page_icon="🏠"
+    page_icon=resource_path("images", "icone.png"),
 )
 
-# === Clear cache si besoin ===
-st.cache_data.clear()
-
-# === Titre ===
+# Titre
 st.markdown("""
     <h3 style='text-align: center;'>
         🏡 Estimation du Prix d'un Bien Immobilier
     </h3>
 """, unsafe_allow_html=True)
 
-# === Image ===
-image_path = os.path.join("images", "immo.jpg")
-if os.path.exists(image_path):
-    image = Image.open(image_path)
-    image_resized = image.resize((700, 300))
-    st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-    st.image(image_resized)
-    st.markdown("</div>", unsafe_allow_html=True)
-else:
-    st.warning("Image introuvable.")
+# Image
+image_path = resource_path("images", "immo.jpg")
+image = Image.open(image_path)
+image_resized = image.resize((700, 300))
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st.image(image_resized)
+st.markdown("</div>", unsafe_allow_html=True)
 
-# === Téléchargement et chargement du modèle ===
+# === Chemin absolu vers le modèle ===
+MODELE_PATH = "/home/sacko/Documents/ProjetStatuCompt/models/model_compress.pkl"
+
+# === Chargement du modèle ===
 def load_model():
-    modele_path = os.path.join("models", "model_DVF_compress.pkl")
-    github_raw_url = "https://github.com/DataEngineer87/ModelisationFonciere/raw/main/models/model_DVF_compress.pkl"
-    
-    # Créer le dossier models si nécessaire
-    if not os.path.exists("models"):
-        os.makedirs("models")
-    
-    # Télécharger le modèle si absent
-    if not os.path.exists(modele_path):
-        st.info("📥 Téléchargement du modèle depuis GitHub...")
-        try:
-            gdown.download(github_raw_url, modele_path, quiet=False)
-            st.success("✅ Modèle téléchargé avec succès.")
-        except Exception as e:
-            st.error("❌ Impossible de télécharger le modèle.")
-            st.text(str(e))
-            st.stop()
-    
-    # Vérifier que le fichier existe
-    if not os.path.exists(modele_path):
-        st.error(f"Le fichier modèle est introuvable à {modele_path}")
-        st.stop()
-    
-    # Charger et retourner le modèle
-    try:
-        return joblib.load(modele_path)
-    except Exception as e:
-        st.error("❌ Erreur lors du chargement du modèle.")
-        st.text(str(e))
-        st.stop()
+    if not os.path.exists(MODELE_PATH):
+        st.error(f"Le fichier du modèle est introuvable : {MODELE_PATH}")
+        return None
+    return joblib.load(MODELE_PATH)
 
 model = load_model()
 
@@ -82,7 +60,7 @@ if model is not None:
     ])
     Type_local = st.selectbox("Type de bien", ["Appartement", "Maison"])
 
-    # Encodage one-hot
+    # Encodage one-hot avec noms exacts du modèle
     Nature_mutation_Adjudication = float(Nature_mutation == "Adjudication")
     Nature_mutation_Echange = float(Nature_mutation == "Echange")
     Nature_mutation_Expropriation = float(Nature_mutation == "Expropriation")
@@ -108,15 +86,18 @@ if model is not None:
         'Type_local_Appartement', 'Type_local_Maison'
     ])
 
+    # Forcer les colonnes en float pour SHAP
     donnees_utilisateur = donnees_utilisateur.astype(float)
 
     st.write("Données utilisées pour la prédiction :")
     st.dataframe(donnees_utilisateur)
 
-    # Prédiction
     try:
         prediction = model.predict(donnees_utilisateur)[0]
         st.info(f"Estimation du prix total : **{prediction * Surface_reelle_bati:.2f} €**")
     except Exception as e:
         st.error("Erreur lors de la prédiction.")
         st.text(str(e))
+
+else:
+    st.stop()

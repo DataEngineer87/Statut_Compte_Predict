@@ -1,0 +1,10 @@
+# Core
+streamlit
+pandas
+numpy
+matplotlib
+Pillow
+# Machine learning / model
+scikit-learn
+joblib
+
